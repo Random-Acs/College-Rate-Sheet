@@ -157,6 +157,30 @@ let activeSchool = 0;
 let activeView = "rate";
 let data = { "School 1": {} };
 
+// Load data from localStorage
+function loadData() {
+  const savedSchools = localStorage.getItem('schools');
+  const savedActiveSchool = localStorage.getItem('activeSchool');
+  const savedActiveView = localStorage.getItem('activeView');
+  const savedData = localStorage.getItem('data');
+  
+  if (savedSchools) schools = JSON.parse(savedSchools);
+  if (savedActiveSchool !== null) activeSchool = parseInt(savedActiveSchool);
+  if (savedActiveView) activeView = savedActiveView;
+  if (savedData) data = JSON.parse(savedData);
+}
+
+// Save data to localStorage
+function saveData() {
+  localStorage.setItem('schools', JSON.stringify(schools));
+  localStorage.setItem('activeSchool', activeSchool.toString());
+  localStorage.setItem('activeView', activeView);
+  localStorage.setItem('data', JSON.stringify(data));
+}
+
+// Load data on page load
+loadData();
+
 function getScore(sname) {
   const d = data[sname] || {};
   let total = 0, count = 0;
@@ -297,14 +321,15 @@ function render() {
   app.innerHTML = html;
 }
 
-function setView(v) { activeView = v; render(); }
-function selectSchool(i) { activeSchool = i; render(); }
+function setView(v) { activeView = v; saveData(); render(); }
+function selectSchool(i) { activeSchool = i; saveData(); render(); }
 function addSchool() {
   const inp = document.getElementById("newname");
   const name = inp?.value?.trim();
   if (!name) return;
   if (!schools.includes(name)) { schools.push(name); data[name] = {}; }
   activeSchool = schools.indexOf(name);
+  saveData();
   render();
 }
 function removeSchool(i) {
@@ -312,22 +337,27 @@ function removeSchool(i) {
   delete data[schools[i]];
   schools.splice(i, 1);
   activeSchool = Math.min(activeSchool, schools.length - 1);
+  saveData();
   render();
 }
 function rate(id, val) {
   const sname = schools[activeSchool];
   if (!data[sname]) data[sname] = {};
   data[sname][id] = (data[sname][id] === val) ? 0 : val;
+  saveData();
   render();
 }
 function saveNote(val) {
   const sname = schools[activeSchool];
   if (!data[sname]) data[sname] = {};
   data[sname]._notes = val;
+  saveData();
 }
+
+// Load data on page load
+loadData();
 
 render();
 </script>
 </body>
 </html>
-
